@@ -7,9 +7,10 @@ import pgzrun
 
 WIDTH = 800
 HEIGHT = 800
-COUNT = 100
-MINRADIUS = 5
-MAXRADIUS = 20
+COUNT = 80
+MINRADIUS = 10
+MAXRADIUS = 25
+MAXFORCE = 200
 BG = "#F0F8FB"
 
 """VARIABLES"""
@@ -59,8 +60,7 @@ def computeForces():
 
             force = -1 * particle1['charge'] * \
                 particle2['charge'] / (distance * distance)
-            if force > 1000:
-                force = 1000
+            force = min(force, MAXFORCE)
 
             forceX = force * diffX / distance
             forceY = force * diffY / distance
