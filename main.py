@@ -97,12 +97,6 @@ def containParticle(particle):
         particle['vy'] = math.fabs(particle['vy']) * -1
 
 
-def randomColor():
-    """Returns a random color in the form of a RGB tuple."""
-
-    return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-
-
 def randomPastelColor():
     """Returns a random pastel color in the form of a RGB tuple."""
 
