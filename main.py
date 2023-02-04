@@ -7,11 +7,10 @@ import pgzrun
 
 WIDTH = 800
 HEIGHT = 800
-COUNT = 20
-MAXRADIUS = 20
+COUNT = 100
 MINRADIUS = 5
-MINMASS = 5
-MAXMASS = 20
+MAXRADIUS = 20
+BG = "#F0F8FB"
 
 """VARIABLES"""
 
@@ -22,7 +21,7 @@ particlesList = []  # List of particles
 
 
 def draw():
-    screen.fill("white")
+    screen.fill(BG)
     drawParticles()
 
 
@@ -36,18 +35,87 @@ def drawParticles():
 
 
 def update():
-    pass
+    updateParticles()
+
 
 def updateParticles():
-    pass
+    computeForces()
+    applyForces()
+
 
 """HELPERS"""
+
+
+def computeForces():
+    for i in range(len(particlesList)):
+        for j in range(i + 1, len(particlesList)):
+            particle1 = particlesList[i]
+            particle2 = particlesList[j]
+            diffX = particle2['x'] - particle1['x']
+            diffY = particle2['y'] - particle1['y']
+            distance = math.sqrt(diffX ** 2 + diffY ** 2)
+            if distance == 0:
+                continue
+
+            force = -1 * particle1['charge'] * \
+                particle2['charge'] / (distance * distance)
+            if force > 1000:
+                force = 1000
+
+            forceX = force * diffX / distance
+            forceY = force * diffY / distance
+
+            particle1['forceX'] += forceX
+            particle1['forceY'] += forceY
+            particle2['forceX'] -= forceX
+            particle2['forceY'] -= forceY
+
+
+def applyForces():
+    for particle in particlesList:
+        particle['vx'] += particle['forceX'] / particle['mass']
+        particle['vy'] += particle['forceY'] / particle['mass']
+        particle['x'] += particle['vx']
+        particle['y'] += particle['vy']
+        particle["forceX"] = 0
+        particle["forceY"] = 0
+        containParticle(particle)
+
+
+def containParticle(particle):
+    if particle['x'] < particle["radius"]:
+        particle['x'] = particle["radius"]
+        particle['vx'] = math.fabs(particle['vx'])
+    if particle['y'] < particle["radius"]:
+        particle['y'] = particle["radius"]
+        particle['vy'] = math.fabs(particle['vy'])
+    if particle['x'] > WIDTH - particle["radius"]:
+        particle['x'] = WIDTH - particle["radius"]
+        particle['vx'] = math.fabs(particle['vx']) * -1
+    if particle['y'] > HEIGHT - particle["radius"]:
+        particle['y'] = HEIGHT - particle["radius"]
+        particle['vy'] = math.fabs(particle['vy']) * -1
 
 
 def randomColor():
     """Returns a random color in the form of a RGB tuple."""
 
     return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+
+def randomPastelColor():
+    """Returns a random pastel color in the form of a RGB tuple."""
+
+    R = random.randint(0, 255)
+    G = random.randint(0, 255)
+    B = random.randint(0, 255)
+
+    while abs(R + G + B - 255) < 10:
+        R = random.randint(0, 255)
+        G = random.randint(0, 255)
+        B = random.randint(0, 255)
+
+    return (R, G, B)
 
 
 """INITIALIZATION"""
@@ -60,11 +128,16 @@ def init():
         "radius": random.randint(MINRADIUS, MAXRADIUS),
         "x": random.randint(0, WIDTH),
         "y": random.randint(0, HEIGHT),
-        "color": randomColor(),
-        "mass": random.randint(MINMASS, MAXMASS),
+        "color": randomPastelColor(),
         "vx": 0,
         "vy": 0,
+        "forceX": 0,
+        "forceY": 0,
     } for _ in range(COUNT)]
+
+    for particle in particlesList:
+        particle["mass"] = particle["radius"]
+        particle["charge"] = particle["mass"] * 2
 
 
 init()
